@@ -6,4 +6,4 @@ edition = "2024"
 [dependencies]
 rss-reporter-core = { version = "0.1.0", path = "../rss-reporter-core" }
 
-quickxml_to_serde = "0.6.0"
+feed-rs = "2.3.1"
