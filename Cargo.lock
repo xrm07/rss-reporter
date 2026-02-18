@@ -411,6 +411,9 @@ dependencies = [
 [[package]]
 name = "rss-reporter-core"
 version = "0.1.0"
+dependencies = [
+ "feed-rs",
+]
 
 [[package]]
 name = "rustversion"
