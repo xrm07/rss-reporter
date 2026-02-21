@@ -4,8 +4,8 @@ fn main() {
     let out = Command::new("curl").arg("https://scour.ing/@xrm07/rss.xml").output().expect("Failed to execute process");
     if out.status.success(){
         let xml = String::from_utf8_lossy(&out.stdout).to_string();
-        let feed = parser::parse(xml.as_bytes()).unwrap();
-        let vec_site_ctx = rss_reporter_core::feed_to_site_ctx(feed);
+        let feed = parser::parse(xml.as_bytes()).expect("Failed to parse RSS feed");
+        let vec_site_ctx = rss_reporter_core::feed_to_SiteCtx(feed);
         println!("{:?}",vec_site_ctx);
         for ctx in vec_site_ctx{
             println!("--------------------");
