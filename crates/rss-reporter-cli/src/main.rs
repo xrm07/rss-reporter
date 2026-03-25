@@ -1,22 +1,10 @@
-use std::process::Command;
-use feed_rs::parser;
+use rss_reporter_core::{convert_rssxml_to_feed, feed_to_site_ctx};
 fn main() {
-    let out = Command::new("curl").arg("https://scour.ing/@xrm07/rss.xml").output().expect("Failed to execute process");
-    if out.status.success(){
-        let xml = String::from_utf8_lossy(&out.stdout).to_string();
-        let feed = parser::parse(xml.as_bytes()).expect("Failed to parse RSS feed");
-        let vec_site_ctx = rss_reporter_core::feed_to_SiteCtx(feed);
-        println!("{:?}",vec_site_ctx);
-        for ctx in vec_site_ctx{
-            println!("--------------------");
-            println!("{:?}: tag:{}",ctx.article_title.content,ctx.topic_tag);
-            println!("link: {}",ctx.article_url);
-            println!("--------------------");
-        }
-    }else{
-        println!("{:?}",out.stderr);
-        return;
-    }
+    let urls:Vec<&str> = vec!["https://scour.ing/@xrm07/rss.xml","https://wired.jp/rssfeeder/"];
+
+    let feeds = convert_rssxml_to_feed(urls);
+
+    let site_contexts = feed_to_site_ctx(feeds);
 }
 /*
 std::process::commandによるコマンド実行の返り値，Output．そのエンティティ．stdoutはコマンド実行後によって返されるもの，stderrはstdoutのエラーを受け取るものをもつ．
