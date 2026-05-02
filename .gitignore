@@ -2,3 +2,4 @@ target/
 .agents/
 .codex-spp/
 docs/
+config.toml

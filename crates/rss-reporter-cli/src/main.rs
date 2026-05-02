@@ -1,13 +1,38 @@
-use rss_reporter_core::{convert_rssxml_to_feed, feed_to_site_ctx};
+use rss_reporter_core::{load_site_context,SubscriptionArticles};
+
 fn main() {
-    let urls:Vec<&str> = vec!["https://scour.ing/@xrm07/rss.xml","https://wired.jp/rssfeeder/"];
+    match load_site_context() {
+        Ok(report) => {
+            for subscription_articles in report.subscriptions{
+                let SubscriptionArticles {
+                    subscription,
+                    articles,
+                } = subscription_articles;
 
-    let feeds = convert_rssxml_to_feed(urls);
+                println!("subscription: {}", subscription.title);
+                println!("site: {}", subscription.site_url);
+                println!("feed: {}", subscription.feed_url);
+                println!();
 
-    let site_contexts = feed_to_site_ctx(feeds);
+                for article in articles{
+                    println!("  title: {}", article.title);
+                    println!("  publisher: {}", article.publisher_site);
+                    println!("  tag: {}", article.topic_tag);
+                    println!("  url: {}", article.url);
+                    println!();
+                }
+            }
+
+            for error in report.errors{
+                eprintln!(
+                    "failed: {} ({})  {:?}",
+                    error.source_name, error.feed_url, error.error
+                );
+            }
+        }
+        
+        Err(err) => {
+            eprintln!("failed to load config: {:?}", err);
+        }
+    }
 }
-/*
-std::process::commandによるコマンド実行の返り値，Output．そのエンティティ．stdoutはコマンド実行後によって返されるもの，stderrはstdoutのエラーを受け取るものをもつ．
-これらはVec<u8>で保存される．これらはバイト列なので普通にprintしようとすると数字の羅列が帰ってくる．それを加工するのがString::from_utf8_lossy,これによってutf-8にバイト列を検証しながら変換してくれる．
-
-*/
