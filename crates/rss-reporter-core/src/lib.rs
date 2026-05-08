@@ -69,7 +69,7 @@ pub struct SourceError {
     pub error: RequestError,
 }
 
-pub fn load_site_context() -> Result<LoadArticleContextReport, RequestError> {
+pub fn load_article_context_report_from_config() -> Result<LoadArticleContextReport, RequestError> {
     let sources = load_enabled_sources().map_err(|err| RequestError::Config(err.to_string()))?;
 
     // リクエストを行うクライアントを作成，リクエストそれぞれでこのクライアントを再利用する．
@@ -147,7 +147,7 @@ fn parse_rssxml_to_feed(xml: String) -> Result<Feed, feed_rs::parser::ParseFeedE
 
 //feedをSubscriptionArticlesにパースする．
 fn parse_feed_to_subscription_articles(feed: Feed, source: &RssSource) -> SubscriptionArticles {
-    let subscription = parse_feed_to_subscription_ctx(&feed,source);
+    let subscription = parse_feed_to_subscription_ctx(&feed, source);
 
     let articles = feed
         .entries
@@ -175,7 +175,7 @@ fn parse_feed_to_subscription_ctx(feed: &Feed, source: &RssSource) -> Subscripti
 
 fn parse_entry_to_article_ctx(entry: Entry, subscription: &SubscriptionCtx) -> ArticleCtx {
     let raw_url = primary_link_href(&entry.links).unwrap_or_else(|| entry.id.clone());
-    let url = nomalize_artilcle_url(&raw_url);
+    let url = normalize_article_url(&raw_url);
 
     let title = entry
         .title
@@ -212,11 +212,11 @@ fn publisher_site_from_url(url: &str, fallback: &str) -> String {
         .and_then(|url| url.host_str().map(|host| host.to_owned()))
         .unwrap_or_else(|| fallback.to_owned())
 }
-fn nomalize_artilcle_url(url: &str) -> String {
-    extract_scour_redirect_taget(url).unwrap_or_else(|| url.to_owned())
+fn normalize_article_url(url: &str) -> String {
+    extract_scour_redirect_target(url).unwrap_or_else(|| url.to_owned())
 }
 
-fn extract_scour_redirect_taget(url:&str) -> Option<String>{
+fn extract_scour_redirect_target(url: &str) -> Option<String> {
     let parsed = Url::parse(url).ok()?;
 
     if parsed.host_str()? != "scour.ing" {

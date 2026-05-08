@@ -1,9 +1,10 @@
-use rss_reporter_core::{load_site_context,SubscriptionArticles};
+use std::process::ExitCode;
+use rss_reporter_core::{SubscriptionArticles, load_article_context_report_from_config};
 
-fn main() {
-    match load_site_context() {
+fn main() -> ExitCode{
+    match load_article_context_report_from_config() {
         Ok(report) => {
-            for subscription_articles in report.subscriptions{
+            for subscription_articles in report.subscriptions {
                 let SubscriptionArticles {
                     subscription,
                     articles,
@@ -14,7 +15,7 @@ fn main() {
                 println!("feed: {}", subscription.feed_url);
                 println!();
 
-                for article in articles{
+                for article in articles {
                     println!("  title: {}", article.title);
                     println!("  publisher: {}", article.publisher_site);
                     println!("  tag: {}", article.topic_tag);
@@ -23,16 +24,17 @@ fn main() {
                 }
             }
 
-            for error in report.errors{
+            for error in report.errors {
                 eprintln!(
                     "failed: {} ({})  {:?}",
                     error.source_name, error.feed_url, error.error
                 );
             }
+            ExitCode::SUCCESS
         }
-        
         Err(err) => {
             eprintln!("failed to load config: {:?}", err);
+            ExitCode::FAILURE
         }
     }
 }
