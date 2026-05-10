@@ -233,3 +233,71 @@ fn extract_scour_redirect_target(url: &str) -> Option<String> {
 
     Some(decoded_target)
 }
+
+//TODO:XML系の変換ロジックについてテストを書く
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn subscription() -> SubscriptionCtx {
+        SubscriptionCtx {
+            title: "Fallback Subscription".to_owned(),
+            site_url: "https://fallback.example/".to_owned(),
+            feed_url: "https://fallback.example/feed.xml".to_owned(),
+        }
+    }
+
+    fn link(href: &str) -> Link {
+        Link {
+            href: href.to_owned(),
+            rel: None,
+            media_type: None,
+            href_lang: None,
+            title: None,
+            length: None,
+        }
+    }
+
+    #[test]
+    fn parse_entry_normalizes_scour_redirect_url_to_original_url() {
+        let entry = Entry {
+            id: "entry-1".to_owned(),
+            links: vec![link(
+                "https://scour.ing/redirect/https%3A%2F%2Fexample.com%2Farticles%2F1%3Futm_source%3Drss?utm_source=rss",
+            )],
+            ..Entry::default()
+        };
+
+        let article = parse_entry_to_article_ctx(entry, &subscription());
+
+        assert_eq!(article.url, "https://example.com/articles/1?utm_source=rss");
+        assert_eq!(article.publisher_site, "example.com");
+    }
+
+    #[test]
+    fn parse_entry_falls_back_when_link_title_and_category_are_missing() {
+        let entry = Entry {
+            id: "fallback-entry-id".to_owned(),
+            links: Vec::new(),
+            title: None,
+            categories: Vec::new(),
+            ..Entry::default()
+        };
+
+        let article = parse_entry_to_article_ctx(entry, &subscription());
+
+        assert_eq!(article.url, "fallback-entry-id");
+        assert_eq!(article.title, "fallback-entry-id");
+        assert_eq!(article.topic_tag, "");
+        assert_eq!(article.publisher_site, "Fallback Subscription");
+    }
+
+    #[test]
+    fn publisher_site_from_url_uses_url_host() {
+        let publisher_site =
+            publisher_site_from_url("https://news.example.com/path/to/article", "fallback");
+
+        assert_eq!(publisher_site, "news.example.com");
+    }
+}

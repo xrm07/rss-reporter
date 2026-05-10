@@ -1,7 +1,7 @@
-use std::process::ExitCode;
 use rss_reporter_core::{SubscriptionArticles, load_article_context_report_from_config};
+use std::process::ExitCode;
 
-fn main() -> ExitCode{
+fn main() -> ExitCode {
     match load_article_context_report_from_config() {
         Ok(report) => {
             for subscription_articles in report.subscriptions {
