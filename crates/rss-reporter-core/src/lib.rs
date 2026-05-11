@@ -111,7 +111,7 @@ fn load_one_site_context(
     let xml = fetch_rssxml(url.clone(), client)
         .map_err(|err| classify_caused_error_with_reqwest(err, url))?;
 
-    let feed = parse_rssxml_to_feed(xml).map_err(|_| RequestError::InvalidXml)?;
+    let feed = parse_rssxml_to_feed(&xml).map_err(|_| RequestError::InvalidXml)?;
 
     // let mut subscription_articles = parse_feed_to_site_ctx(feed);
     // subscription_articles.normalize_scour_url();
@@ -132,7 +132,12 @@ fn load_enabled_sources() -> Result<Vec<RssSource>, config::ConfigError> {
 
 // webサイトにXMLを取りに行き，Result型でreqwestのエラーと中身をで受け取る．
 fn fetch_rssxml(url: Url, client: &reqwest::blocking::Client) -> Result<Vec<u8>, reqwest::Error> {
-    client.get(url).send()?.error_for_status()?.bytes().map(|b| b.to_vec())
+    client
+        .get(url)
+        .send()?
+        .error_for_status()?
+        .bytes()
+        .map(|b| b.to_vec())
 }
 
 //reqwestが引き起こしたエラーを確認し，振り分けて返す．
