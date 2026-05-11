@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use config::File;
 use feed_rs::model::{Entry, Feed, Link};
 use reqwest::{StatusCode, Url};
@@ -73,7 +75,11 @@ pub fn load_article_context_report_from_config() -> Result<LoadArticleContextRep
     let sources = load_enabled_sources().map_err(|err| RequestError::Config(err.to_string()))?;
 
     // リクエストを行うクライアントを作成，リクエストそれぞれでこのクライアントを再利用する．
-    let client = reqwest::blocking::Client::new();
+    let client = reqwest::blocking::Client::builder()
+        .timeout(Duration::from_secs(15))
+        .connect_timeout(Duration::from_secs(5))
+        .build()
+        .map_err(|err| RequestError::Other(err.to_string()))?;
 
     let mut subscriptions: Vec<SubscriptionArticles> = Vec::new();
     let mut errors = Vec::new();
@@ -125,8 +131,8 @@ fn load_enabled_sources() -> Result<Vec<RssSource>, config::ConfigError> {
 }
 
 // webサイトにXMLを取りに行き，Result型でreqwestのエラーと中身をで受け取る．
-fn fetch_rssxml(url: Url, client: &reqwest::blocking::Client) -> Result<String, reqwest::Error> {
-    client.get(url).send()?.error_for_status()?.text()
+fn fetch_rssxml(url: Url, client: &reqwest::blocking::Client) -> Result<Vec<u8>, reqwest::Error> {
+    client.get(url).send()?.error_for_status()?.bytes().map(|b| b.to_vec())
 }
 
 //reqwestが引き起こしたエラーを確認し，振り分けて返す．
@@ -141,8 +147,8 @@ fn classify_caused_error_with_reqwest(err: reqwest::Error, url: Url) -> RequestE
 }
 
 //xmlをfeedにパースする．（feed_rs::parser）
-fn parse_rssxml_to_feed(xml: String) -> Result<Feed, feed_rs::parser::ParseFeedError> {
-    feed_rs::parser::parse(xml.as_bytes())
+fn parse_rssxml_to_feed(xml: &[u8]) -> Result<Feed, feed_rs::parser::ParseFeedError> {
+    feed_rs::parser::parse(xml)
 }
 
 //feedをSubscriptionArticlesにパースする．
