@@ -1,0 +1,13 @@
+[[source]]
+name = "" # サイト名など，任意の名前をつける
+
+feed_url = "" # rssを配信しているURL，XMLに到達できるURLを埋める．
+
+enabled = false # true OR false
+
+[[source]]
+name = ""
+
+feed_url = ""
+
+enabled = false
