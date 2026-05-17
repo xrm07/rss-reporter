@@ -24,7 +24,20 @@
 
 ## 依存関係
 
-- Rust
+このプロジェクトは Rust workspace として構成されています。
+
+```text
+rss-reporter/
+├── crates/
+│   ├── rss-reporter-core
+│   ├── rss-reporter-cli
+│   └── rss-reporter-tui
+├── Cargo.toml
+└── config.example.toml
+```
+
+- Rust (Rust edition 2024)
+  -  Rust 1.85 以上を推奨します。
 - Cargo
 
 主な利用クレート:
@@ -46,6 +59,9 @@
 ## 実行手順
 
 1. 設定ファイルを作成する
+
+実行時には `config.toml` が必要です。  
+`config.example.toml` をコピーして作成します。
 
 ```sh
 cp config.example.toml config.toml
@@ -72,7 +88,7 @@ cargo run -p rss-reporter-cli
 cargo test
 ```
 
-## WIP
+## 未実装 / WIP
 
 - TUI 版の実装
 - エラー表示の改善
